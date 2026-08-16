@@ -106,17 +106,6 @@ Assets/TMPFontToolkit/
 
 ---
 
-## 🧠 踩坑记录
-
-- ⚠️ `CreateFontAsset` 以 **Static** 创建时 `TryAddCharacters` 会拒绝 → 先用 Dynamic 烘焙再转 Static
-- ⚠️ `CreateFontAsset` 创建的材质**不持久化** → 需手动 `AddObjectToAsset`
-- ⚠️ TMP 图集纹理是**内嵌子资源**，无法配置压缩 → 必须导出独立 PNG
-- ⚠️ 容量判断**不要用公式估算** → 用干跑测试拿真实结果
-- ⚠️ 多图集必须**逐张导出**，只导第一张会丢字形
-- ⚠️ 干跑测试开销大，**不能放 OnGUI 每帧执行**（会卡死编辑器）
-
----
-
 ## 🖥️ 兼容性
 
 - ✅ Unity 2022.3 LTS（TMP 3.0.7 验证）
