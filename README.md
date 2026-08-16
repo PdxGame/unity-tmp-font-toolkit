@@ -52,6 +52,12 @@
 >
 > 无论哪种模式，**ASCII（数字/字母/符号）和常用中文标点都会自动包含**，无需手动添加
 
+![扫描场景+代码模式](Screenshots/mode-scan.png)
+
+![字符文件模式](Screenshots/mode-file.png)
+
+![手动输入模式](Screenshots/mode-manual.png)
+
 ### ② 烘焙参数（字体怎么生成）
 
 | 参数 | 说明 |
