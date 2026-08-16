@@ -153,6 +153,16 @@ namespace TMPFontToolkit
             Log("扫描完成: " + scannedChars.Count + " 个字符");
         }
 
+        // 用户提供的字符（不含自动 ASCII/标点）——用于判断模式是否为空
+        int GetUserCharCount()
+        {
+            if (charSourceMode == 0)
+                return charFile != null ? charFile.text.Replace("\r", "").Replace("\n", "").Length : 0;
+            if (charSourceMode == 1)
+                return scanned ? (scannedChars.Count + extraChars.Length) : 0;
+            return manualChars.Replace("\r", "").Replace("\n", "").Length;
+        }
+
         // 当前有效字符集（去重，含 ASCII + 中文标点）
         string GetEffectiveChars()
         {
@@ -227,14 +237,15 @@ namespace TMPFontToolkit
             int sample = sampleSizes[sampleSizeIndex];
             int padding = paddings[paddingIndex];
             string chars = GetEffectiveChars();
-            int charCount = chars.Length;
+            int charCount = chars.Length;              // 全字符（含 ASCII+标点），评估用
+            int userCharCount = GetUserCharCount();    // 用户提供字符，判断模式是否为空
             int mode = charSourceMode;
 
             // 手动评估：点按钮才干跑测试；结果按模式独立缓存
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(new GUIContent("评估容量（当前 " + atlasSize + " × 采样 " + sample + "）", "用 TMP 真实打包测试当前字符集能否放入当前图集，返回实际图集张数与缺字数（不保存任何文件，耗时约 1-2 秒）"), GUILayout.Width(260)))
             {
-                if (charCount == 0) { Log("错误：字符集为空，无法评估"); }
+                if (userCharCount == 0) { Log("错误：请先在字符集区域添加字符"); }
                 else if (sourceFont == null) { Log("错误：请先选择源字体"); }
                 else
                 {
@@ -265,7 +276,7 @@ namespace TMPFontToolkit
             // 过期检测：当前参数与该模式评估时的快照不同则提示重新评估（各模式独立）
             string currentKey = sourceFont != null ? BuildProbeKey(mode, chars, charCount, sample, padding, atlasSize) : "";
             bool stale = probeCache[mode] != null && probeCacheKey[mode] != currentKey;
-            bool hasContent = charCount > 0;
+            bool hasContent = userCharCount > 0;   // 只有用户提供字符才算有内容
 
             var probe = (stale || !hasContent) ? null : probeCache[mode];
             int atlasCount = (probe != null && probe.atlasCount > 0) ? probe.atlasCount : 1;
@@ -276,7 +287,7 @@ namespace TMPFontToolkit
             else if (probe != null)
             {
                 string msg = string.Format(
-                    "当前 {0} 图集 × 采样 {1}：{2} 字 → {3}，实际需要 {4} 张图集",
+                    "当前 {0} 图集 × 采样 {1}：{2} 字（含 ASCII/标点）→ {3}，实际需要 {4} 张图集",
                     atlasSize, sample, charCount,
                     probe.missingChars == 0 ? "✅ 全部放入" : "⚠️ 缺 " + probe.missingChars + " 字",
                     probe.atlasCount);
@@ -287,7 +298,7 @@ namespace TMPFontToolkit
             }
             else if (hasContent)
             {
-                EditorGUILayout.HelpBox("点击「评估容量」查看当前配置能否放下 " + charCount + " 字", MessageType.Info);
+                EditorGUILayout.HelpBox("点击「评估容量」查看当前配置能否放下 " + charCount + " 字（含 ASCII/标点）", MessageType.Info);
             }
             // 当前模式未设置字符：保持安静
 
